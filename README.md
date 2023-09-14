@@ -1,5 +1,7 @@
 # Excel Data Anonymizer
 
+![photo_2023-09-14_07-19-37](https://github.com/shahabafshar/Anonymizer/assets/5617071/be77ac9f-629d-4cd0-9d90-33e9a42041f2)
+
 ### Description:
 This utility is designed for data scientists and analysts who require draft datasets derived from original data without compromising privacy. With the Excel Data Anonymizer, users can generate a randomized version of their datasets, ensuring that the essential structures remain while the actual data values are altered. This utility is particularly handy when sharing datasets for public demos, examples, or initial stages of analysis where raw data can't be disclosed.
 
