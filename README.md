@@ -8,14 +8,30 @@ This utility is designed for data scientists and analysts who require draft data
 - **Preserve Formulas**: Cells containing formulas in the Excel sheet are kept intact, ensuring that the logic and calculations in the original data are not lost.
 - **Intuitive GUI**: Offers an interactive and user-friendly interface, simplifying the anonymization process for users of all experience levels.
 
-### Use Case:
-Perfect for data professionals who need draft datasets for:
-- **Demonstrations**
-- **Data analysis drafts**
-- **Sharing samples** without revealing actual data
-- **Mockups** for data visualization tools
+### Quick Start:
+1. Clone the repository: `git clone https://github.com/shahabafshar/Anonymizer`
+2. Navigate to the directory: `cd Anonymizer`
+3. Install required libraries: `pip install -r requirements.txt`
+4. Run the main file: `python excel_anonymizer.py`
 
-### Goal:
-Our primary focus is to uphold data privacy while retaining the accessibility and general structure of the original dataset, facilitating seamless data science processes without privacy concerns.
+### Setup:
+Ensure you have Python installed. After cloning the repository, install the required libraries using the following command:
+```
+pip install -r requirements.txt
+```
 
----
+### Usage:
+Run the main utility using the command:
+```
+python excel_anonymizer.py
+```
+Follow the GUI instructions to select an Excel file and anonymize its content.
+
+### Contributions:
+Feel free to submit pull requests, open issues, or provide feedback. We appreciate all contributions and feedback.
+
+### License:
+This project is licensed under the MIT License. See the `LICENSE` file for more details.
+
+### Acknowledgments:
+- Thanks to all contributors and the community for the valuable feedback and contributions.
