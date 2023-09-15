@@ -17,14 +17,38 @@ def log_message(txt_log, message):
     txt_log.yview_moveto(1.0)
     root.update_idletasks()
 
+def manipulate_data(df, txt_log):
+    if cancel_flag:
+        return df
+
+    # Duplicate 25% of random rows
+    num_rows_to_duplicate = int(0.25 * len(df))
+    duplicated_rows = df.sample(n=num_rows_to_duplicate)
+    df = pd.concat([df, duplicated_rows], axis=0).reset_index(drop=True)
+    log_message(txt_log, f"Duplicated {num_rows_to_duplicate} rows.")
+
+    # Omit 25% of random rows
+    num_rows_to_omit = int(0.25 * len(df))
+    drop_indices = np.random.choice(df.index, num_rows_to_omit, replace=False)
+    df = df.drop(drop_indices).reset_index(drop=True)
+    log_message(txt_log, f"Omitted {num_rows_to_omit} rows.")
+
+    return df
+
 def randomize_data(df, formula_cells, progress_var, txt_log):
     problem_columns = []
     total_cols = len(df.columns)
     for index, col in enumerate(df.columns):
+        if cancel_flag:
+            return df, problem_columns
+
         try:
-            max_adjustment = df[col].std() / 10 if df[col].dtype == 'float64' else 0
-            df[col] = df[col].apply(lambda x: round(x + np.random.uniform(-max_adjustment, max_adjustment), get_decimal_points(x)) if (x, col) not in formula_cells else x)
-            progress_portion = 100 / total_cols  # Allocating 100% for anonymization 
+            if df[col].dtype == 'float64' or df[col].dtype == 'int64':
+                adjustment = (df[col].max() - df[col].min()) * 0.25
+                df[col] = df[col].apply(lambda x: round(x + np.random.uniform(-adjustment, adjustment), get_decimal_points(x)) if (x, col) not in formula_cells else x)
+            elif df[col].dtype == 'object':
+                df[col] = df[col].sample(frac=1).reset_index(drop=True)
+            progress_portion = 100 / total_cols
             current_progress = progress_var.get() + progress_portion
             progress_var.set(current_progress)
             log_message(txt_log, f"Processed column {col}.")
@@ -54,13 +78,10 @@ def choose_and_anonymize():
     try:
         log_message(txt_log, "Starting to process the file...")
         file_path = filedialog.askopenfilename()
-
         if not file_path:
             return
-        
-        btn.config(text="Cancel", command=stop_process)
 
-        # Reading the Excel file
+        btn.config(text="Cancel", command=stop_process)
         progress_bar_1.config(mode='indeterminate')
         progress_bar_1.start(10)
         log_message(txt_log, "Reading Excel file...")
@@ -69,17 +90,18 @@ def choose_and_anonymize():
         progress_bar_1.stop()
         progress_bar_1.config(mode='determinate')
         progress_1.set(100)
-        
+
         if cancel_flag:
             log_message(txt_log, "Process cancelled by the user.")
             reset_ui()
             return
 
+        df = manipulate_data(df, txt_log)
+
         directory, original_name = os.path.split(file_path)
         name, extension = os.path.splitext(original_name)
         default_name = f"{name}_anon{extension}"
         save_path = filedialog.asksaveasfilename(initialdir=directory, initialfile=default_name, defaultextension=".xlsx")
-
         if not save_path:
             reset_ui()
             return
@@ -91,16 +113,15 @@ def choose_and_anonymize():
 
         log_message(txt_log, "Preparing for anonymization...")
         progress_2.set(0)
-        
+
         df_anon, problem_columns = randomize_data(df, formula_cells, progress_2, txt_log)
-        progress_2.set(100)  # Make sure it reaches 100% before saving
+        progress_2.set(100)
 
         if cancel_flag:
             log_message(txt_log, "Process cancelled by the user.")
             reset_ui()
             return
-        
-        # Saving the anonymized data
+
         log_message(txt_log, "Starting saving process...")
         progress_bar_3.config(mode='indeterminate')
         progress_bar_3.start(10)
@@ -109,16 +130,16 @@ def choose_and_anonymize():
         progress_bar_3.config(mode='determinate')
         progress_3.set(100)
         log_message(txt_log, "Data saved successfully.")
-        
+
         if problem_columns:
             modal_message = "Finished with errors."
             for col, error_msg in problem_columns:
                 log_message(txt_log, f"Column: {col} - Error: {error_msg}")
         else:
             modal_message = "Finished without errors."
-        
+
         log_message(txt_log, modal_message)
-        log_message(txt_log, "=====================================\n\n")  # Distinct separation for next run
+        log_message(txt_log, "=====================================\n\n")
         messagebox.showinfo("Process Completed", modal_message)
     except Exception as e:
         log_message(txt_log, f"Error: {str(e)}")
